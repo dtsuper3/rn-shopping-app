@@ -1,10 +1,14 @@
 import React from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 
-export const EditProductScreen = () => {
+interface IEditProductScreen {
+
+}
+
+export const EditProductScreen: React.FC<IEditProductScreen> = (props) => {
     return (
         <View>
-            <Text></Text>
+            <Text>The Edit Product </Text>
         </View>
     )
 }

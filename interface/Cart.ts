@@ -1,4 +1,6 @@
 import * as ProductInterface from "../interface/Product";
+import * as OrderInterface from "../interface/Order";
+
 export enum CartActionTypeConstant {
     ADD_TO_CART = "ADD_TO_CART",
     REMOVE_FROM_CART = "REMOVE_FROM_CART"
@@ -27,5 +29,8 @@ export interface IRemoveFromCartAction {
     type: CartActionTypeConstant.REMOVE_FROM_CART,
     payload: { pid: string }
 }
+export interface IAddOrderAction {
+    type: OrderInterface.OrderActionTypeConstant.ADD_ORDER
+}
 
-export type CartActionType = IAddToCartAction | IRemoveFromCartAction
+export type CartActionType = IAddToCartAction | IRemoveFromCartAction | IAddOrderAction | ProductInterface.IProductDeleteAction;

@@ -4,12 +4,10 @@ import {
     Text,
     Image,
     StyleSheet,
-    Button,
     TouchableOpacity,
     TouchableNativeFeedback,
     Platform
 } from 'react-native'
-import { COLORS } from "../constants/colors";
 import * as ProductInterface from "../interface/Product";
 
 export const ProductItem: React.FC<ProductInterface.IProductItem> = (props) => {
@@ -18,7 +16,7 @@ export const ProductItem: React.FC<ProductInterface.IProductItem> = (props) => {
     return (
         <View style={styles.product}>
             <View style={styles.touchable}>
-                <TouchableComponent onPress={props.onViewDetail} useForeground>
+                <TouchableComponent onPress={props.onSelect} useForeground>
                     <View>
                         <View style={styles.imageContainer}>
                             <Image
@@ -30,14 +28,7 @@ export const ProductItem: React.FC<ProductInterface.IProductItem> = (props) => {
                             <Text style={styles.price}>{props.price.toFixed(2)}</Text>
                         </View>
                         <View style={styles.actions}>
-                            <Button
-                                color={COLORS.primary}
-                                title="View Details"
-                                onPress={props.onViewDetail} />
-                            <Button
-                                color={COLORS.primary}
-                                title="To Cart"
-                                onPress={props.onAddToCart} />
+                            {props.children}
                         </View>
                     </View>
                 </TouchableComponent>
@@ -87,12 +78,12 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        height: "25%",
+        height: "23%",
         paddingHorizontal: 20
     },
     details: {
         alignItems: "center",
-        height: "15%",
+        height: "17%",
         padding: 10
     }
 })

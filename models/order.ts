@@ -12,5 +12,4 @@ export class Order implements OrderInterface.IOrderItem {
         this.totalAmont = totalAmount;
         this.date = date;
     }
-
 }

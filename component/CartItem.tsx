@@ -13,7 +13,8 @@ interface ICartItem {
     quantity: number;
     title: string
     amount: number
-    onRemove: any;
+    onRemove?: any;
+    deletable?: boolean
 }
 export const CartItem: React.FC<ICartItem> = (props) => {
     return (
@@ -24,12 +25,15 @@ export const CartItem: React.FC<ICartItem> = (props) => {
             </View>
             <View style={styles.itemData}>
                 <Text style={styles.mainText}>INR {props.amount.toFixed(2)}</Text>
-                <TouchableOpacity onPress={props.onRemove} style={styles.deleteButton}>
-                    <Ionicons
-                        name={Platform.OS === "android" ? "md-trash" : "ios-trash"}
-                        size={23}
-                        color={COLORS.danger} />
-                </TouchableOpacity>
+                {
+                    props.deletable &&
+                    <TouchableOpacity onPress={props.onRemove} style={styles.deleteButton}>
+                        <Ionicons
+                            name={Platform.OS === "android" ? "md-trash" : "ios-trash"}
+                            size={23}
+                            color={COLORS.danger} />
+                    </TouchableOpacity>
+                }
             </View>
         </View>
     )

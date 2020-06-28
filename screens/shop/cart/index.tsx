@@ -37,7 +37,7 @@ export const CartScreen: React.FC<ICartScreen> = (props) => {
         <View style={styles.screen}>
             <View style={styles.summary}>
                 <Text style={styles.summaryText}>
-                    Total: <Text style={styles.amount}>INR {cartTotalAmount.toFixed(2)}</Text>
+                    Total: <Text style={styles.amount}>INR {Math.round(cartTotalAmount.toFixed(2) as any * 100) / 100}</Text>
                 </Text>
                 <Button
                     title="Order Now"
@@ -55,6 +55,7 @@ export const CartScreen: React.FC<ICartScreen> = (props) => {
                         quantity={itemData.item.quantity}
                         title={itemData.item.productTitle}
                         amount={itemData.item.sum}
+                        deletable
                         onRemove={() => {
                             dispatch(CartAction.removeFromCart(itemData.item.productId))
                         }} />
@@ -64,6 +65,9 @@ export const CartScreen: React.FC<ICartScreen> = (props) => {
     )
 }
 
+(CartScreen as any).navigation = {
+    headerTitle: "Your Cart"
+}
 const styles = StyleSheet.create({
     screen: {
         margin: 20
