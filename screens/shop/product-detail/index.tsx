@@ -7,6 +7,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { COLORS } from "../../../constants/colors"
 import * as CartActions from '../../../store/actions/cart';
 import * as ProductInterface from "../../../interface/Product";
+import { notifyMessage } from '../../../component/Toast';
 
 interface IProductDetailScreen extends NavigationContainerProps { }
 
@@ -25,6 +26,7 @@ export const ProductDetailScreen: React.FC<IProductDetailScreen> = (props) => {
                     color={COLORS.primary}
                     title="Add to Cart"
                     onPress={() => {
+                        notifyMessage("Added to cart")
                         dispatch(CartActions.addToCart(selectedProduct as ProductInterface.IProduct))
                     }} />
             </View>

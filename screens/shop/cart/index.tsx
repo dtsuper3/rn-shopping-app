@@ -7,10 +7,9 @@ import * as CartInterface from "../../../interface/Cart";
 import { CartItem } from "../../../component/CartItem"
 import * as CartAction from "../../../store/actions/cart";
 import * as OrderAction from "../../../store/actions/order";
+import { notifyMessage } from '../../../component/Toast'
 
-interface ICartScreen {
-
-}
+interface ICartScreen { }
 
 interface ITransformedCartItems extends CartInterface.ICartItem {
     productId: string;
@@ -57,6 +56,7 @@ export const CartScreen: React.FC<ICartScreen> = (props) => {
                         amount={itemData.item.sum}
                         deletable
                         onRemove={() => {
+                            notifyMessage("Removed from cart")
                             dispatch(CartAction.removeFromCart(itemData.item.productId))
                         }} />
                 )}

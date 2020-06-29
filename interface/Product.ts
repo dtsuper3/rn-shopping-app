@@ -7,6 +7,9 @@ export interface IProduct {
     description: string,
     price: number
 }
+
+export type IUpdateProductItem = Omit<IProduct, "price" | "ownerId" | "id">
+export type ICreateProductItem = Omit<IProduct, "ownerId" | "id">
 export interface IProductItem {
     title: string,
     imageUrl: string,
@@ -15,6 +18,8 @@ export interface IProductItem {
 }
 
 export enum ProductActionTypeConstant {
+    CREATE_PRODUCT = "CREATE_PRODUCT",
+    UPDATE_PRODUCT = "UPDATE_PRODUCT",
     DELETE_PRODUCT = "DELETE_PRODUCT"
 }
 export interface IProductReducer {
@@ -27,6 +32,20 @@ export interface IProductAction {
     payload: any;
 }
 
+export interface ICreateProductAction {
+    type: ProductActionTypeConstant.CREATE_PRODUCT,
+    payload: {
+        item: ICreateProductItem;
+    }
+}
+
+export interface IUpdateProductAction {
+    type: ProductActionTypeConstant.UPDATE_PRODUCT,
+    payload: {
+        pid: string;
+        item: IUpdateProductItem;
+    }
+}
 export interface IProductDeleteAction {
     type: ProductActionTypeConstant.DELETE_PRODUCT,
     payload: {
@@ -34,4 +53,4 @@ export interface IProductDeleteAction {
     }
 }
 
-export type ProductType = IProductDeleteAction
+export type ProductType = IProductDeleteAction | ICreateProductAction | IUpdateProductAction;

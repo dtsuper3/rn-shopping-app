@@ -1,5 +1,5 @@
 import React from 'react'
-import { StyleSheet, FlatList, Platform, Button } from 'react-native'
+import { StyleSheet, FlatList, Platform, Button, Alert } from 'react-native'
 import { ProductItem } from "../../../component/ProductItem";
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../../store/reducers';
@@ -20,6 +20,18 @@ export const UserProductsScreen: React.FC<IUserProductsScreen> = (props) => {
     const handleEditProduct = (id: string) => {
         props.navigation?.navigate(NavigationEnum.EditProducts, { productId: id });
     }
+
+    const handleDelete = (id: string) => {
+        Alert.alert("Are your sure?", "Do you really want to delete this items?", [
+            { text: "No", style: "default", },
+            {
+                text: "Yes", style: "destructive", onPress: () => {
+                    dispatch(ProductAction.deleteProduct(id))
+                }
+            }
+        ])
+    }
+
     return (
         <FlatList
             data={userProducts}
@@ -38,9 +50,7 @@ export const UserProductsScreen: React.FC<IUserProductsScreen> = (props) => {
                     <Button
                         color={COLORS.primary}
                         title="Delete"
-                        onPress={() => {
-                            dispatch(ProductAction.deleteProduct(itemData.item.id))
-                        }} />
+                        onPress={() => handleDelete(itemData.item.id)} />
                 </ProductItem>
             )}
         />

@@ -10,6 +10,7 @@ import * as CartActions from "../../../store/actions/cart";
 import { HeaderButtons, Item } from 'react-navigation-header-buttons';
 import { CustomHeaderButton } from '../../../component/HeaderButton';
 import { COLORS } from '../../../constants/colors';
+import { notifyMessage } from '../../../component/Toast';
 
 interface IProductOverviewScreen extends NavigationContainerProps {
 
@@ -44,6 +45,7 @@ export const ProductOverviewScreen: React.FC<IProductOverviewScreen> = (props) =
                         color={COLORS.primary}
                         title="To Cart"
                         onPress={() => {
+                            notifyMessage("Added to cart")
                             dispatch(CartActions.addToCart(itemData.item))
                         }} />
                 </ProductItem>
