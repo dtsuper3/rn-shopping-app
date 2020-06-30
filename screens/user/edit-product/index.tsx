@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useReducer } from 'react'
 import {
     StyleSheet,
     Text,
     View,
     ScrollView,
-    Platform
+    Platform,
+    Alert
 } from 'react-native'
 import { TextInput } from 'react-native-gesture-handler'
 import { NavigationContainerProps, NavigationRouteConfig } from 'react-navigation'
@@ -17,40 +18,127 @@ import { notifyMessage } from '../../../component/Toast'
 
 interface IEditProductScreen extends NavigationContainerProps { }
 
+enum FormReducerType {
+    FORM_INPUT_UPDATE = "FORM_INPUT_UPDATE",
+}
+
+type FormInputType = "title" | "imageUrl" | "description" | "price";
+
+interface IFormReducerState {
+    inputValues: {
+        title: string,
+        imageUrl: string,
+        description: string,
+        price: string
+    },
+    inputValidities: {
+        title: boolean,
+        imageUrl: boolean,
+        description: boolean,
+        price: boolean
+    },
+    formIsValid: boolean
+}
+
+interface IFormInputChangeAction {
+    type: FormReducerType.FORM_INPUT_UPDATE,
+    value: string,
+    isValid: boolean,
+    inputId: FormInputType
+}
+
+type FormAction = IFormInputChangeAction
+
+const formReducer = (state: IFormReducerState, action: FormAction): IFormReducerState => {
+    if (action.type === FormReducerType.FORM_INPUT_UPDATE) {
+        const updatedValues = {
+            ...state.inputValues,
+            [action.inputId]: action.value
+        };
+        const updateValidities: any = {
+            ...state.inputValidities,
+            [action.inputId]: action.isValid
+        }
+        let isFormValid = true;
+        for (const key in updateValidities) {
+            isFormValid = isFormValid && updateValidities[key];
+        }
+        return {
+            inputValues: updatedValues,
+            inputValidities: updateValidities,
+            formIsValid: isFormValid
+        };
+
+    }
+    return state;
+
+
+}
+
 export const EditProductScreen: React.FC<IEditProductScreen> = (props) => {
     const prodId = props.navigation?.getParam("productId");
     const editedProduct = useSelector((state: RootState) => state.product.userProducts.find(prod => prod.id === prodId))
 
-    const [title, setTitle] = useState(editedProduct ? editedProduct.title : "");
-    const [imageUrl, setImageUrl] = useState(editedProduct ? editedProduct.imageUrl : "");
-    const [price, setPrice] = useState(editedProduct ? editedProduct.price : "");
-    const [description, setDescription] = useState(editedProduct ? editedProduct.description : "");
     const dispatch = useDispatch();
+    const [formState, dispatchFormState] = useReducer(formReducer, {
+        inputValues: {
+            title: editedProduct ? editedProduct.title : "",
+            imageUrl: editedProduct ? editedProduct.imageUrl : "",
+            description: editedProduct ? editedProduct.description : "",
+            price: editedProduct ? editedProduct.description : ""
+        },
+        inputValidities: {
+            title: editedProduct ? true : false,
+            imageUrl: editedProduct ? true : false,
+            description: editedProduct ? true : false,
+            price: editedProduct ? true : false
+        },
+        formIsValid: editedProduct ? true : false
+    });
 
     const handleSubmit = useCallback(() => {
+        if (!formState.formIsValid) {
+            Alert.alert("Wrong input!", "Please check the errors in the form.", [
+                { text: "Okay" }
+            ])
+            return;
+        }
         if (editedProduct) {
             dispatch(ProductAction.updateProduct(editedProduct.id, {
-                title,
-                description,
-                imageUrl
+                title: formState.inputValues.title,
+                description: formState.inputValues.description,
+                imageUrl: formState.inputValues.imageUrl
             }))
             notifyMessage("Update Successfully")
         } else {
             dispatch(ProductAction.createProduct({
-                title,
-                description,
-                imageUrl,
-                price: parseFloat(price.toString())
+                title: formState.inputValues.title,
+                description: formState.inputValues.description,
+                imageUrl: formState.inputValues.imageUrl,
+                price: +formState.inputValues.price
             }))
             notifyMessage("Added Successfully")
         }
         props.navigation?.goBack()
-    }, [dispatch, title, imageUrl, description, price, prodId]);
+    }, [dispatch, formState]);
 
 
     useEffect(() => {
         props.navigation?.setParams({ submit: handleSubmit })
     }, [handleSubmit])
+
+    const handleInputChange = (name: FormInputType, text: string) => {
+        let isValid = false;
+        if (text.trim().length > 0) {
+            isValid = true
+        }
+        dispatchFormState({
+            type: FormReducerType.FORM_INPUT_UPDATE,
+            value: text,
+            isValid: isValid,
+            inputId: name
+        });
+    }
 
     return (
         <ScrollView>
@@ -59,15 +147,21 @@ export const EditProductScreen: React.FC<IEditProductScreen> = (props) => {
                     <Text style={styles.lablel}>Title</Text>
                     <TextInput
                         style={styles.input}
-                        value={title}
-                        onChangeText={text => setTitle(text)} />
+                        value={formState.inputValues.title}
+                        onChangeText={text => handleInputChange("title", text)}
+                        keyboardType="default"
+                        autoCapitalize="sentences"
+                        autoCorrect
+                        returnKeyType="next" />
+                    {!formState.inputValidities.title && <Text>Please enter a valid title!</Text>}
                 </View>
                 <View style={styles.formControl}>
                     <Text style={styles.lablel}>Image URL</Text>
                     <TextInput
                         style={styles.input}
-                        value={imageUrl}
-                        onChangeText={text => setImageUrl(text)} />
+                        value={formState.inputValues.imageUrl}
+                        onChangeText={text => handleInputChange("imageUrl", text)}
+                    />
                 </View>
                 {
                     !editedProduct &&
@@ -75,16 +169,17 @@ export const EditProductScreen: React.FC<IEditProductScreen> = (props) => {
                         <Text style={styles.lablel}>Price</Text>
                         <TextInput
                             style={styles.input}
-                            value={price.toString()}
-                            onChangeText={text => setPrice(text)} />
+                            value={formState.inputValues.price.toString()}
+                            onChangeText={text => handleInputChange("price", text)}
+                            keyboardType="decimal-pad" />
                     </View>
                 }
                 <View style={styles.formControl}>
                     <Text style={styles.lablel}>Description</Text>
                     <TextInput
                         style={styles.input}
-                        value={description}
-                        onChangeText={text => setDescription(text)} />
+                        value={formState.inputValues.description}
+                        onChangeText={text => handleInputChange("description", text)} />
                 </View>
             </View>
         </ScrollView>
