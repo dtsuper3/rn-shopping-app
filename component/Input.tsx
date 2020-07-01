@@ -1,4 +1,4 @@
-import React, { useReducer } from "react";
+import React, { useReducer, useEffect } from "react";
 import {
     View,
     Text,
@@ -9,37 +9,55 @@ import {
 import { emailValidator } from "../helpers";
 
 interface IInput extends TextInputProps {
+    name: string;
     label: string;
     errorText: string;
-    inititalValue: string | number;
-    inititallyValid: boolean;
+    inititalValue?: string;
+    inititallyValid?: boolean;
     required?: boolean;
     email?: boolean;
     min?: number;
     max?: number;
-    minLength?: number
+    minLength?: number;
+    onInputChange: any;
 }
 
 interface IInputReducer {
-    value: string | number;
-    isValid: boolean;
+    value: string | undefined;
+    isValid: boolean | undefined;
     touched: boolean;
 }
 
 enum InputEnum {
-    INPUT_CHANGE = "INPUT_CHANGE"
+    INPUT_CHANGE = "INPUT_CHANGE",
+    INPUT_BLUR = "INPUT_BLUR"
 }
 
 interface IInputChangeAction {
     type: InputEnum.INPUT_CHANGE;
     value: string;
+    isValid: boolean;
 }
 
-const inputReducer = (state: IInputReducer, action: IInputChangeAction): IInputReducer => {
-    switch (action.type) {
-        case (InputEnum.INPUT_CHANGE){
+interface IInputBlurAction {
+    type: InputEnum.INPUT_BLUR;
+}
 
-        }
+type InputAction = IInputChangeAction | IInputBlurAction;
+
+const inputReducer = (state: IInputReducer, action: InputAction): IInputReducer => {
+    switch (action.type) {
+        case InputEnum.INPUT_CHANGE:
+            return {
+                ...state,
+                value: action.value,
+                isValid: action.isValid
+            }
+        case InputEnum.INPUT_BLUR:
+            return {
+                ...state,
+                touched: true
+            }
         default:
             return state
     }
@@ -51,6 +69,14 @@ export const Input: React.FC<IInput> = props => {
         isValid: props.inititallyValid,
         touched: false
     })
+
+    const { onInputChange, name } = props;
+
+    useEffect(() => {
+        if (inputState.touched) {
+            props.onInputChange(name, inputState.value, inputState.isValid);
+        }
+    }, [inputState, onInputChange, name])
 
     const handleInputChange = (text: string) => {
         let isValid = true;
@@ -69,7 +95,11 @@ export const Input: React.FC<IInput> = props => {
         if (props.minLength !== null && props.minLength !== undefined && text.length < props.minLength) {
             isValid = false;
         }
-        dispatch({ type: InputEnum.INPUT_CHANGE, value: text })
+        dispatch({ type: InputEnum.INPUT_CHANGE, value: text, isValid: isValid })
+    }
+
+    const handleFocus = () => {
+        dispatch({ type: InputEnum.INPUT_BLUR })
     }
 
     return (
@@ -78,10 +108,16 @@ export const Input: React.FC<IInput> = props => {
             <TextInput
                 {...props}
                 style={styles.input}
-                value={props.}
+                value={inputState.value}
                 onChangeText={handleInputChange}
+                onBlur={handleFocus}
             />
-            {!formState.inputValidities.title && <Text>{props.errorText}</Text>}
+            {!inputState.isValid && inputState.touched && (
+                <View style={styles.errorContainer}>
+                    <Text style={styles.errorText}>{props.errorText}</Text>
+                </View>
+            )
+            }
         </View>
     )
 
@@ -104,5 +140,13 @@ const styles = StyleSheet.create({
     },
     lablel: {
         fontFamily: "open-sans-bold",
+    },
+    errorContainer: {
+        marginVertical: 5
+    },
+    errorText: {
+        fontFamily: "open-sans",
+        color: "red",
+        fontSize: 14
     }
 })

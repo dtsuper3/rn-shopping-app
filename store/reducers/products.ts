@@ -3,12 +3,32 @@ import * as ProductInterface from "../../interface/Product"
 import { Product } from "../../models/product";
 
 const initialState: ProductInterface.IProductReducer = {
-    availableProducts: PRODUCTS,
-    userProducts: PRODUCTS.filter(item => item.ownerId === "u1")
+    // availableProducts: PRODUCTS,
+    // userProducts: PRODUCTS.filter(item => item.ownerId === "u1"),
+    availableProducts: [],
+    userProducts: [],
+    isLoading: false,
+    dataExists: false
 }
 
 export const ProductReducer = (state = initialState, action: ProductInterface.ProductType): ProductInterface.IProductReducer => {
     switch (action.type) {
+        case ProductInterface.ProductActionTypeConstant.IS_LOADING:
+            return {
+                ...state,
+                isLoading: action.payload.isLoading
+            }
+        case ProductInterface.ProductActionTypeConstant.DATA_EXISTS:
+            return {
+                ...state,
+                dataExists: action.payload.dataExists
+            }
+        case ProductInterface.ProductActionTypeConstant.FETCH_PRODUCT:
+            return {
+                ...state,
+                availableProducts: action.payload.products,
+                userProducts: action.payload.products.filter(item => item.ownerId === "u1")
+            }
         case ProductInterface.ProductActionTypeConstant.DELETE_PRODUCT:
             return {
                 ...state,
@@ -17,7 +37,7 @@ export const ProductReducer = (state = initialState, action: ProductInterface.Pr
             };
         case ProductInterface.ProductActionTypeConstant.CREATE_PRODUCT:
             const newProduct = new Product(
-                new Date().toString(),
+                action.payload.item.id,
                 "u1",
                 action.payload.item.title,
                 action.payload.item.imageUrl,
@@ -30,8 +50,9 @@ export const ProductReducer = (state = initialState, action: ProductInterface.Pr
                 userProducts: state.userProducts.concat(newProduct)
             }
         case ProductInterface.ProductActionTypeConstant.UPDATE_PRODUCT:
-            console.log(action.payload)
+            // console.log(action.payload)
             return {
+                ...state,
                 userProducts: state.userProducts.map(item => {
                     if (item.id === action.payload.pid) {
                         return {

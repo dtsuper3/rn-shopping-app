@@ -1,5 +1,13 @@
-import React from 'react';
-import { FlatList, Platform, Button } from 'react-native';
+import React, { useEffect, useCallback } from 'react';
+import {
+    FlatList,
+    Platform,
+    Button,
+    Text
+    , View,
+    ActivityIndicator,
+    StyleSheet
+} from 'react-native';
 import { useSelector, useDispatch } from "react-redux";
 import { ReducerEnum } from '../../../interface/Redux';
 import { RootState } from '../../../store/reducers';
@@ -7,6 +15,7 @@ import { ProductItem } from "../../../component/ProductItem";
 import { NavigationContainerProps, NavigationRouteConfig } from 'react-navigation';
 import { NavigationEnum } from '../../../interface/Navigation';
 import * as CartActions from "../../../store/actions/cart";
+import * as ProductActions from "../../../store/actions/product";
 import { HeaderButtons, Item } from 'react-navigation-header-buttons';
 import { CustomHeaderButton } from '../../../component/HeaderButton';
 import { COLORS } from '../../../constants/colors';
@@ -16,8 +25,23 @@ interface IProductOverviewScreen extends NavigationContainerProps {
 
 }
 export const ProductOverviewScreen: React.FC<IProductOverviewScreen> = (props) => {
-    const products = useSelector((state: RootState) => state[ReducerEnum.product].availableProducts)
+    const { availableProducts: products, isLoading, dataExists } = useSelector((state: RootState) => state[ReducerEnum.product])
     const dispatch = useDispatch();
+
+    const loadProducts = useCallback(() => {
+        dispatch(ProductActions.fetchProducts())
+    }, [dispatch])
+
+    useEffect(() => {
+        loadProducts
+    }, [dispatch])
+
+    useEffect(() => {
+        const willFocusSub = props.navigation?.addListener("willFocus", loadProducts)
+        return () => {
+            willFocusSub?.remove()
+        }
+    }, [loadProducts])
 
     const handleSelectItem = (id: string, title: string) => {
         props.navigation?.navigate(NavigationEnum.ProductDetail,
@@ -25,6 +49,18 @@ export const ProductOverviewScreen: React.FC<IProductOverviewScreen> = (props) =
                 productId: id,
                 productTitle: title
             });
+    }
+
+    if (isLoading) {
+        return <View style={styles.centered}>
+            <ActivityIndicator size="large" color={COLORS.primary} />
+        </View>
+    }
+
+    if (!isLoading && products.length === 0) {
+        return <View style={styles.centered}>
+            <Text>No products found. Maybe start adding some!</Text>
+        </View>
     }
 
     return (
@@ -71,3 +107,11 @@ export const ProductOverviewScreen: React.FC<IProductOverviewScreen> = (props) =
         </HeaderButtons>
     }
 }
+
+const styles = StyleSheet.create({
+    centered: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center"
+    }
+})
