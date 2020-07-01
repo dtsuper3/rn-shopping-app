@@ -20,7 +20,7 @@
       "supportsTablet": true
     },
     "android": {
-      "package": "com.dt.shopping-app",
+      "package": "com.dt.shoppingApp",
       "versionCode": "1.0.0"
     },
     "web": {
