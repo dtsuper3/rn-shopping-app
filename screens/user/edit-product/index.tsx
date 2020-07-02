@@ -5,7 +5,8 @@ import {
     ScrollView,
     Platform,
     Alert,
-    KeyboardAvoidingView
+    KeyboardAvoidingView,
+    ActivityIndicator
 } from 'react-native'
 import { NavigationContainerProps, NavigationRouteConfig } from 'react-navigation'
 import { HeaderButtons, Item } from 'react-navigation-header-buttons'
@@ -15,6 +16,7 @@ import { RootState } from '../../../store/reducers'
 import * as ProductAction from '../../../store/actions/product';
 import { notifyMessage } from '../../../component/Toast'
 import { Input } from '../../../component/Input'
+import { Loader } from '../../../component/Loader'
 
 interface IEditProductScreen extends NavigationContainerProps { }
 
@@ -84,6 +86,7 @@ const formReducer = (state: IFormReducerState, action: FormAction): IFormReducer
 export const EditProductScreen: React.FC<IEditProductScreen> = (props) => {
     const prodId = props.navigation?.getParam("productId");
     const editedProduct = useSelector((state: RootState) => state.product.userProducts.find(prod => prod.id === prodId))
+    const { isLoading, error } = useSelector((state: RootState) => state.product);
 
     const dispatch = useDispatch();
     const [formState, dispatchFormState] = useReducer(formReducer, {
@@ -102,30 +105,40 @@ export const EditProductScreen: React.FC<IEditProductScreen> = (props) => {
         formIsValid: editedProduct ? true : false
     });
 
-    const handleSubmit = useCallback(() => {
+    useEffect(() => {
+        if (error) {
+            Alert.alert("An error occured!", error, [{ text: "Okay" }])
+        }
+    }, [error])
+
+    const handleSubmit = useCallback(async () => {
         if (!formState.formIsValid) {
             Alert.alert("Wrong input!", "Please check the errors in the form.", [
                 { text: "Okay" }
             ])
             return;
         }
-        if (editedProduct) {
-            dispatch(ProductAction.updateProduct(editedProduct.id, {
-                title: formState.inputValues.title,
-                description: formState.inputValues.description,
-                imageUrl: formState.inputValues.imageUrl
-            }))
-            notifyMessage("Update Successfully")
-        } else {
-            dispatch(ProductAction.createProduct({
-                title: formState.inputValues.title,
-                description: formState.inputValues.description,
-                imageUrl: formState.inputValues.imageUrl,
-                price: +formState.inputValues.price
-            }))
-            notifyMessage("Added Successfully")
+        try {
+            if (editedProduct) {
+                await dispatch(ProductAction.updateProduct(editedProduct.id, {
+                    title: formState.inputValues.title,
+                    description: formState.inputValues.description,
+                    imageUrl: formState.inputValues.imageUrl
+                }))
+                notifyMessage("Update Successfully")
+            } else {
+                await dispatch(ProductAction.createProduct({
+                    title: formState.inputValues.title,
+                    description: formState.inputValues.description,
+                    imageUrl: formState.inputValues.imageUrl,
+                    price: +formState.inputValues.price
+                } as any))
+                notifyMessage("Added Successfully")
+            }
+            props.navigation?.goBack()
+        } catch (err) {
+            dispatch(ProductAction.errorProduct(""));
         }
-        props.navigation?.goBack()
     }, [dispatch, formState]);
 
 
@@ -141,6 +154,10 @@ export const EditProductScreen: React.FC<IEditProductScreen> = (props) => {
             inputId: inputIdentifier
         });
     }, [dispatchFormState]);
+
+    if (isLoading) {
+        return <Loader />
+    }
 
     return (
         <KeyboardAvoidingView style={{ flex: 1 }} behavior="height" keyboardVerticalOffset={10}>

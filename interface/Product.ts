@@ -32,13 +32,15 @@ export enum ProductActionTypeConstant {
     DELETE_PRODUCT = "DELETE_PRODUCT",
     FETCH_PRODUCT = "FETCH_PRODUCT",
     IS_LOADING = "IS_LOADING",
-    DATA_EXISTS = "DATA_EXISTS"
+    DATA_EXISTS = "DATA_EXISTS",
+    ERROR_PRODUCT = "ERROR_PRODUCT",
 }
 export interface IProductReducer {
     availableProducts: IProduct[];
     userProducts: IProduct[];
     isLoading: boolean;
     dataExists: boolean;
+    error: string;
 }
 
 export interface IFetchProductAction {
@@ -83,4 +85,11 @@ export interface IProductDataExistsAction {
     }
 }
 
-export type ProductType = IFetchProductAction | IProductDeleteAction | ICreateProductAction | IUpdateProductAction | IProductIsLoadingAction | IProductDataExistsAction;
+export interface IProductErrorAction {
+    type: ProductActionTypeConstant.ERROR_PRODUCT,
+    payload: {
+        error: string
+    }
+}
+
+export type ProductType = IFetchProductAction | IProductDeleteAction | ICreateProductAction | IUpdateProductAction | IProductIsLoadingAction | IProductDataExistsAction | IProductErrorAction;

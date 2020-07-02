@@ -21,7 +21,7 @@
     },
     "android": {
       "package": "com.dt.shoppingApp",
-      "versionCode": "1.0.0"
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png"

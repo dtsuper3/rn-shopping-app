@@ -1,12 +1,9 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import {
     FlatList,
     Platform,
     Button,
     Text
-    , View,
-    ActivityIndicator,
-    StyleSheet
 } from 'react-native';
 import { useSelector, useDispatch } from "react-redux";
 import { ReducerEnum } from '../../../interface/Redux';
@@ -20,20 +17,30 @@ import { HeaderButtons, Item } from 'react-navigation-header-buttons';
 import { CustomHeaderButton } from '../../../component/HeaderButton';
 import { COLORS } from '../../../constants/colors';
 import { notifyMessage } from '../../../component/Toast';
+import { ErrorMessage } from '../../../component/ErrorMessages';
+import { Loader } from '../../../component/Loader';
 
 interface IProductOverviewScreen extends NavigationContainerProps {
 
 }
 export const ProductOverviewScreen: React.FC<IProductOverviewScreen> = (props) => {
-    const { availableProducts: products, isLoading, dataExists } = useSelector((state: RootState) => state[ReducerEnum.product])
+    const { availableProducts: products, isLoading, error, dataExists } = useSelector((state: RootState) => state[ReducerEnum.product])
+    const [initialLoading, setInitialLoading] = useState(false);
     const dispatch = useDispatch();
 
-    const loadProducts = useCallback(() => {
-        dispatch(ProductActions.fetchProducts())
+    const loadProducts: any = useCallback(async () => {
+        try {
+            await dispatch(ProductActions.fetchProducts())
+        } catch (err) {
+
+        }
     }, [dispatch])
 
     useEffect(() => {
-        loadProducts
+        setInitialLoading(true)
+        loadProducts().then(() => {
+            setInitialLoading(false)
+        })
     }, [dispatch])
 
     useEffect(() => {
@@ -51,42 +58,51 @@ export const ProductOverviewScreen: React.FC<IProductOverviewScreen> = (props) =
             });
     }
 
-    if (isLoading) {
-        return <View style={styles.centered}>
-            <ActivityIndicator size="large" color={COLORS.primary} />
-        </View>
+    if (error) {
+        return <ErrorMessage>
+            <Text>An error occured!</Text>
+            <Button title="Try again" onPress={loadProducts} />
+        </ErrorMessage>
     }
 
-    if (!isLoading && products.length === 0) {
-        return <View style={styles.centered}>
+    if (initialLoading) {
+        return <Loader />
+    }
+
+    if (!isLoading && dataExists && products.length === 0) {
+        return <ErrorMessage>
             <Text>No products found. Maybe start adding some!</Text>
-        </View>
+        </ErrorMessage>
     }
-
+    // console.log("render")
     return (
-        <FlatList
-            data={products}
-            keyExtractor={item => item.id}
-            renderItem={itemData => (
-                <ProductItem
-                    imageUrl={itemData.item.imageUrl}
-                    price={itemData.item.price}
-                    title={itemData.item.title}
-                    onSelect={() => handleSelectItem(itemData.item.id, itemData.item.title)}>
-                    <Button
-                        color={COLORS.primary}
-                        title="View Details"
-                        onPress={() => handleSelectItem(itemData.item.id, itemData.item.title)} />
-                    <Button
-                        color={COLORS.primary}
-                        title="To Cart"
-                        onPress={() => {
-                            notifyMessage("Added to cart")
-                            dispatch(CartActions.addToCart(itemData.item))
-                        }} />
-                </ProductItem>
-            )}
-        />
+        <React.Fragment>
+            <FlatList
+                onRefresh={loadProducts}
+                refreshing={isLoading}
+                data={products}
+                keyExtractor={item => item.id}
+                renderItem={itemData => (
+                    <ProductItem
+                        imageUrl={itemData.item.imageUrl}
+                        price={itemData.item.price}
+                        title={itemData.item.title}
+                        onSelect={() => handleSelectItem(itemData.item.id, itemData.item.title)}>
+                        <Button
+                            color={COLORS.primary}
+                            title="View Details"
+                            onPress={() => handleSelectItem(itemData.item.id, itemData.item.title)} />
+                        <Button
+                            color={COLORS.primary}
+                            title="To Cart"
+                            onPress={() => {
+                                notifyMessage("Added to cart")
+                                dispatch(CartActions.addToCart(itemData.item))
+                            }} />
+                    </ProductItem>
+                )}
+            />
+        </React.Fragment>
     )
 }
 
@@ -107,11 +123,3 @@ export const ProductOverviewScreen: React.FC<IProductOverviewScreen> = (props) =
         </HeaderButtons>
     }
 }
-
-const styles = StyleSheet.create({
-    centered: {
-        flex: 1,
-        alignItems: "center",
-        justifyContent: "center"
-    }
-})

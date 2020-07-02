@@ -5,18 +5,24 @@ import { Product } from "../../models/product";
 export const fetchProducts = () => {
     return async (dispatch: Dispatch) => {
         dispatch(isLoading(true))
+        dispatch(errorProduct(""))
         try {
             const res = await fetch("https://items-dfe2d.firebaseio.com/products.json", {
                 method: "GET"
             })
+            if (!res.ok) {
+                // console.log("Error")
+                throw new Error("Something went wrong!");
+            }
             dispatch(isLoading(false))
             if (res.ok) {
+                dispatch(isProductDataExists(true))
                 const resData: ProductInterface.IFirebaseSavedProductItem = await res.json();
                 const loadedProducts = [];
                 for (const key in resData) {
                     loadedProducts.push(new Product(key, "u1", resData[key].title, resData[key].imageUrl, resData[key].description, resData[key].price))
                 }
-                console.log(resData);
+                // console.log(resData);
 
                 const action: ProductInterface.IFetchProductAction = {
                     type: ProductInterface.ProductActionTypeConstant.FETCH_PRODUCT,
@@ -26,10 +32,13 @@ export const fetchProducts = () => {
                 }
                 dispatch(action)
             } else {
+                dispatch(isProductDataExists(false))
                 throw new Error("Something went wrong!");
             }
         } catch (err) {
+            // console.log("Error Message:-", err.message)
             dispatch(isLoading(false))
+            dispatch(errorProduct(err.message))
             throw err;
         }
     }
@@ -52,6 +61,16 @@ const isProductDataExists = (status: boolean): ProductInterface.IProductDataExis
         }
     }
 }
+
+export const errorProduct = (error: string): ProductInterface.IProductErrorAction => {
+    return {
+        type: ProductInterface.ProductActionTypeConstant.ERROR_PRODUCT,
+        payload: {
+            error: error
+        }
+    }
+}
+
 export const createProduct = (item: ProductInterface.ICreateProductItem) => {
     return async (dispatch: Dispatch) => {
         const res = await fetch("https://items-dfe2d.firebaseio.com/products.json", {
@@ -78,23 +97,62 @@ export const createProduct = (item: ProductInterface.ICreateProductItem) => {
     }
 }
 
-export const updateProduct = (pid: string, item: ProductInterface.IUpdateProductItem): ProductInterface.IUpdateProductAction => {
-    return {
-        type: ProductInterface.ProductActionTypeConstant.UPDATE_PRODUCT,
-        payload: {
-            pid,
-            item
+export const updateProduct = (pid: string, item: ProductInterface.IUpdateProductItem) => {
+
+    return async (dispatch: Dispatch) => {
+        dispatch(isLoading(true))
+        dispatch(errorProduct(""))
+        try {
+            const res = await fetch(`https://items-dfe2d.firebaseio.com/products/${pid}.json`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(item)
+            })
+
+            if (!res.ok) {
+                throw new Error("Something went wrong!");
+            }
+            // console.log("ResData:- ", resData);
+            const action: ProductInterface.IUpdateProductAction = {
+                type: ProductInterface.ProductActionTypeConstant.UPDATE_PRODUCT,
+                payload: {
+                    pid,
+                    item
+                }
+            }
+            dispatch(action);
+        } catch (err) {
+            dispatch(isLoading(false))
+            dispatch(errorProduct(err.message))
+            throw err;
         }
     }
 }
 
 export const deleteProduct = (productId: string) => {
-    return (dispatch: Dispatch) => {
-        dispatch({
-            type: ProductInterface.ProductActionTypeConstant.DELETE_PRODUCT,
-            payload: {
-                pid: productId
+
+    return async (dispatch: Dispatch) => {
+        dispatch(isLoading(true))
+        dispatch(errorProduct(""))
+        try {
+            const res = await fetch(`https://items-dfe2d.firebaseio.com/products/${productId}.json`, {
+                method: "DELETE"
+            })
+            if (!res.ok) {
+                throw new Error("Something went wrong!");
             }
-        })
+            dispatch({
+                type: ProductInterface.ProductActionTypeConstant.DELETE_PRODUCT,
+                payload: {
+                    pid: productId
+                }
+            })
+        } catch (err) {
+            dispatch(isLoading(false))
+            dispatch(errorProduct(err.message))
+            throw err;
+        }
     }
 }

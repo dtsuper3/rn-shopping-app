@@ -8,7 +8,8 @@ const initialState: ProductInterface.IProductReducer = {
     availableProducts: [],
     userProducts: [],
     isLoading: false,
-    dataExists: false
+    dataExists: false,
+    error: "",
 }
 
 export const ProductReducer = (state = initialState, action: ProductInterface.ProductType): ProductInterface.IProductReducer => {
@@ -17,6 +18,11 @@ export const ProductReducer = (state = initialState, action: ProductInterface.Pr
             return {
                 ...state,
                 isLoading: action.payload.isLoading
+            }
+        case ProductInterface.ProductActionTypeConstant.ERROR_PRODUCT:
+            return {
+                ...state,
+                error: action.payload.error
             }
         case ProductInterface.ProductActionTypeConstant.DATA_EXISTS:
             return {

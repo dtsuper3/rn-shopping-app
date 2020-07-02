@@ -1,17 +1,28 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Text, FlatList, Platform } from 'react-native'
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { RootState } from '../../../store/reducers';
 import { NavigationContainerProps } from 'react-navigation';
 import { HeaderButtons, Item } from 'react-navigation-header-buttons';
 import { CustomHeaderButton } from '../../../component/HeaderButton';
 import { OrderItem } from '../../../component/OrderItem';
+import * as OrderAction from "../../../store/actions/order";
+import { Loader } from '../../../component/Loader';
 
 interface IOrdersScreen {
 
 }
 export const OrdersScreen: React.FC<IOrdersScreen> = (props) => {
-    const orders = useSelector((state: RootState) => state.order.orders);
+    const { orders, isLoading } = useSelector((state: RootState) => state.order);
+    const dispatch = useDispatch();
+    useEffect(() => {
+        dispatch(OrderAction.fetchOrderAction())
+    }, [dispatch]);
+    console.log("Order Screem=>", orders)
+
+    if (isLoading) {
+        return <Loader />
+    }
     return (
         <FlatList
             data={orders}
