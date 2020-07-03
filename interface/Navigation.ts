@@ -4,11 +4,17 @@ export enum NavigationEnum {
     Cart = "Cart",
     Order = "Order",
     UserProducts = "UserProducts",
-    EditProducts = "EditProducts"
+    EditProducts = "EditProducts",
+    Auth = "Auth"
 }
 
 export enum DrawerNavigationEnum {
     Products = "Products",
     Orders = "Orders",
     Admin = "Admin"
+}
+
+export enum RootNavigationEnum {
+    Auth = "Auth",
+    Shop = "Shop"
 }

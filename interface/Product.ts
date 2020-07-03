@@ -18,7 +18,7 @@ export interface IFirebaseSavedProductItem {
 }
 
 export type IUpdateProductItem = Omit<IProduct, "price" | "ownerId" | "id">
-export type ICreateProductItem = Omit<IProduct, "ownerId">
+export type ICreateProductItem = IProduct
 export interface IProductItem {
     title: string,
     imageUrl: string,

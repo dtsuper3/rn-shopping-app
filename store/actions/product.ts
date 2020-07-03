@@ -1,9 +1,10 @@
 import * as ProductInterface from "../../interface/Product";
 import { Dispatch } from "redux";
 import { Product } from "../../models/product";
+import { RootState } from "../reducers";
 
 export const fetchProducts = () => {
-    return async (dispatch: Dispatch) => {
+    return async (dispatch: Dispatch, getState: () => RootState) => {
         dispatch(isLoading(true))
         dispatch(errorProduct(""))
         try {
@@ -72,8 +73,9 @@ export const errorProduct = (error: string): ProductInterface.IProductErrorActio
 }
 
 export const createProduct = (item: ProductInterface.ICreateProductItem) => {
-    return async (dispatch: Dispatch) => {
-        const res = await fetch("https://items-dfe2d.firebaseio.com/products.json", {
+    return async (dispatch: Dispatch, getState: () => RootState) => {
+        const { token, userId } = getState().auth;
+        const res = await fetch(`https://items-dfe2d.firebaseio.com/products.json?auth=${token}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -89,7 +91,9 @@ export const createProduct = (item: ProductInterface.ICreateProductItem) => {
             payload: {
                 item: {
                     ...item,
-                    id: resData.name
+                    id: resData.name,
+                    ownerId: userId as string
+
                 }
             }
         }
@@ -99,11 +103,12 @@ export const createProduct = (item: ProductInterface.ICreateProductItem) => {
 
 export const updateProduct = (pid: string, item: ProductInterface.IUpdateProductItem) => {
 
-    return async (dispatch: Dispatch) => {
+    return async (dispatch: Dispatch, getState: () => RootState) => {
         dispatch(isLoading(true))
         dispatch(errorProduct(""))
+        const token = getState().auth.token;
         try {
-            const res = await fetch(`https://items-dfe2d.firebaseio.com/products/${pid}.json`, {
+            const res = await fetch(`https://items-dfe2d.firebaseio.com/products/${pid}.json?auth=${token}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json"
@@ -133,11 +138,12 @@ export const updateProduct = (pid: string, item: ProductInterface.IUpdateProduct
 
 export const deleteProduct = (productId: string) => {
 
-    return async (dispatch: Dispatch) => {
+    return async (dispatch: Dispatch, getState: () => RootState) => {
         dispatch(isLoading(true))
         dispatch(errorProduct(""))
+        const token = getState().auth.token;
         try {
-            const res = await fetch(`https://items-dfe2d.firebaseio.com/products/${productId}.json`, {
+            const res = await fetch(`https://items-dfe2d.firebaseio.com/products/${productId}.json?auth=${token}`, {
                 method: "DELETE"
             })
             if (!res.ok) {

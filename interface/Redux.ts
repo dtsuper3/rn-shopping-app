@@ -1,5 +1,6 @@
 export enum ReducerEnum {
     product = "product",
     cart = "cart",
-    order = "order"
+    order = "order",
+    auth = "auth"
 }

@@ -2,17 +2,20 @@ import React from "react";
 import { Platform } from "react-native";
 import {
     createStackNavigator,
-    createAppContainer, createDrawerNavigator
+    createAppContainer,
+    createDrawerNavigator,
+    createSwitchNavigator
 } from "react-navigation";
 import { ProductOverviewScreen } from "../screens/shop/product-overview";
 import { COLORS } from "../constants/colors";
 import { ProductDetailScreen } from "../screens/shop/product-detail";
-import { NavigationEnum, DrawerNavigationEnum } from "../interface/Navigation";
+import { NavigationEnum, DrawerNavigationEnum, RootNavigationEnum } from "../interface/Navigation";
 import { CartScreen } from "../screens/shop/cart";
 import { OrdersScreen } from "../screens/shop/orders";
 import { Ionicons } from "@expo/vector-icons";
 import { UserProductsScreen } from "../screens/user/user-products";
 import { EditProductScreen } from "../screens/user/edit-product";
+import { AuthScreen } from "../screens/user/auth-screen";
 
 
 const defaultNavigationOptions = {
@@ -109,6 +112,20 @@ const ShopNavigator = createDrawerNavigator(
         }
     }
 )
-export default createAppContainer(ShopNavigator)
+
+const AuthNavigator = createStackNavigator({
+    [NavigationEnum.Auth]: {
+        screen: AuthScreen
+    },
+}, {
+    defaultNavigationOptions: defaultNavigationOptions
+})
+
+const RootNavigator = createSwitchNavigator({
+    [RootNavigationEnum.Auth]: AuthNavigator,
+    [RootNavigationEnum.Shop]: ShopNavigator
+})
+
+export default createAppContainer(RootNavigator)
 
 

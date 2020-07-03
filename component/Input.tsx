@@ -1,4 +1,4 @@
-import React, { useReducer, useEffect } from "react";
+import React, { useReducer, useEffect, useState, useCallback } from "react";
 import {
     View,
     Text,
@@ -7,6 +7,8 @@ import {
     TextInputProps
 } from "react-native";
 import { emailValidator } from "../helpers";
+import { Ionicons } from "@expo/vector-icons";
+import { COLORS } from "../constants/colors";
 
 interface IInput extends TextInputProps {
     name: string;
@@ -20,6 +22,7 @@ interface IInput extends TextInputProps {
     max?: number;
     minLength?: number;
     onInputChange: any;
+    password?: boolean;
 }
 
 interface IInputReducer {
@@ -69,6 +72,8 @@ export const Input: React.FC<IInput> = props => {
         isValid: props.inititallyValid,
         touched: false
     })
+    const [icon, setIcon] = useState("md-eye-off")
+    const [hidePassword, setHidePassword] = useState(true)
 
     const { onInputChange, name } = props;
 
@@ -102,16 +107,27 @@ export const Input: React.FC<IInput> = props => {
         dispatch({ type: InputEnum.INPUT_BLUR })
     }
 
+    const changeIcon = useCallback(() => {
+        icon !== "md-eye-off"
+            ? (setIcon("md-eye-off"), setHidePassword(false))
+            : (setIcon("md-eye"), setHidePassword(true))
+    }, [props.password, hidePassword, icon])
+
     return (
         <View style={styles.formControl}>
             <Text style={styles.lablel}>{props.label}</Text>
-            <TextInput
-                {...props}
-                style={styles.input}
-                value={inputState.value}
-                onChangeText={handleInputChange}
-                onBlur={handleFocus}
-            />
+            <View style={styles.passwordViewContainer}>
+                <TextInput
+                    {...props}
+                    style={styles.input}
+                    value={inputState.value}
+                    onChangeText={handleInputChange}
+                    onBlur={handleFocus}
+                    secureTextEntry={props.password && hidePassword} />
+                {
+                    props.password &&
+                    <Ionicons style={styles.icon} color={COLORS.primary} name={icon} size={28} onPress={() => changeIcon()} />}
+            </View>
             {!inputState.isValid && inputState.touched && (
                 <View style={styles.errorContainer}>
                     <Text style={styles.errorText}>{props.errorText}</Text>
@@ -136,7 +152,8 @@ const styles = StyleSheet.create({
         paddingHorizontal: 2,
         paddingVertical: 5,
         borderBottomColor: "#ccc",
-        borderBottomWidth: 1
+        borderBottomWidth: 1,
+        width: "100%"
     },
     lablel: {
         fontFamily: "open-sans-bold",
@@ -148,5 +165,14 @@ const styles = StyleSheet.create({
         fontFamily: "open-sans",
         color: "red",
         fontSize: 14
+    },
+    passwordViewContainer: {
+        flexDirection: 'row'
+    },
+    icon: {
+        position: 'absolute',
+        top: 20,
+        right: 0,
+        elevation: 5
     }
 })

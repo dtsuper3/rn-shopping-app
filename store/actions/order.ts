@@ -2,12 +2,14 @@ import * as OrderInterface from "../../interface/Order";
 import * as CartInterface from "../../interface/Cart"
 import { Dispatch } from "redux";
 import { Order } from "../../models/order";
+import { RootState } from "../reducers";
 
 export const fetchOrderAction = () => {
-    return async (dispatch: Dispatch) => {
+    return async (dispatch: Dispatch, getState: () => RootState) => {
         dispatch(orderLoadingAction(true));
+        const { userId } = getState().auth;
         try {
-            const res = await fetch("https://items-dfe2d.firebaseio.com/orders/u1.json", {
+            const res = await fetch(`https://items-dfe2d.firebaseio.com/orders/${userId}.json`, {
                 method: "GET"
             })
             dispatch(orderLoadingAction(false));
@@ -42,10 +44,11 @@ export const fetchOrderAction = () => {
 }
 
 export const addOrder = (cartItem: CartInterface.ICartItem[], totalAmount: number) => {
-    return async (dispatch: Dispatch) => {
+    return async (dispatch: Dispatch, getState: () => RootState) => {
         dispatch(orderLoadingAction(true));
+        const { token, userId } = getState().auth;
         try {
-            const res = await fetch("https://items-dfe2d.firebaseio.com/orders/u1.json", {
+            const res = await fetch(`https://items-dfe2d.firebaseio.com/orders/${userId}.json?auth=${token}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
