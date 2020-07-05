@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Text, FlatList, Platform } from 'react-native'
+import { Text, FlatList, Platform, View } from 'react-native'
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from '../../../store/reducers';
 import { NavigationContainerProps } from 'react-navigation';
@@ -18,10 +18,16 @@ export const OrdersScreen: React.FC<IOrdersScreen> = (props) => {
     useEffect(() => {
         dispatch(OrderAction.fetchOrderAction())
     }, [dispatch]);
-    console.log("Order Screem=>", orders)
+    // console.log("Order Screem=>", orders)
 
     if (isLoading) {
         return <Loader />
+    }
+
+    if (!isLoading && orders.length === 0) {
+        return <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <Text>No order found, maybe start ordering some products?</Text>
+        </View>
     }
     return (
         <FlatList

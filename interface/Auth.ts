@@ -1,6 +1,11 @@
+export enum STORAGE_KEY {
+    userData = "userData"
+}
+
 export enum AuthActionType {
-    SIGN_UP = "SIGN_UP",
-    SIGN_IN = "SIGN_IN"
+    AUTHENTICATE = "AUTHENTICATE",
+    LOGOUT_USER = "LOGOUT_USER"
+
 }
 
 export interface IFirebaseSignUpResponse {
@@ -37,20 +42,16 @@ export interface IAuthReducer {
     userId: null | string;
 }
 
-export interface IRegisterUserAction {
-    type: AuthActionType.SIGN_UP,
+export interface IAuthenticateUserAction {
+    type: AuthActionType.AUTHENTICATE,
     payload: {
         token: string;
         userId: string;
     }
 }
 
-export interface ILoginUserAction {
-    type: AuthActionType.SIGN_IN,
-    payload: {
-        token: string;
-        userId: string;
-    }
+export interface ILogoutUserAction {
+    type: AuthActionType.LOGOUT_USER
 }
 
-export type AuthAction = IRegisterUserAction | ILoginUserAction 
+export type AuthAction = IAuthenticateUserAction | ILogoutUserAction; 

@@ -102,23 +102,28 @@ export const AuthScreen: React.FC<IAuthScreen> = (props) => {
             )
         }
     }, [error])
-    const authHanlder = async () => {
-        const { email, password } = formState.inputValues;
-        let action;
-        if (isSignup) {
-            action = AuthAction.signup(email, password)
-        } else {
-            action = AuthAction.login(email, password)
-        }
-        setError(undefined)
-        setIsLoading(true);
-        try {
-            await dispatch(action);
-            props.navigation?.navigate(RootNavigationEnum.Shop);
 
-        } catch (err) {
-            setError(err.message)
-            setIsLoading(false)
+    const authHanlder = async () => {
+        if (formState.formIsValid) {
+            const { email, password } = formState.inputValues;
+            let action;
+            if (isSignup) {
+                action = AuthAction.signup(email, password)
+            } else {
+                action = AuthAction.login(email, password)
+            }
+            setError(undefined)
+            setIsLoading(true);
+            try {
+                await dispatch(action);
+                props.navigation?.navigate(RootNavigationEnum.Shop);
+
+            } catch (err) {
+                setError(err.message)
+                setIsLoading(false)
+            }
+        } else {
+            Alert.alert("Form not valid", "Please fill all fields", [{ text: "Okay" }])
         }
     }
 

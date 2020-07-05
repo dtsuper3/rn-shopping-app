@@ -16,5 +16,6 @@ export enum DrawerNavigationEnum {
 
 export enum RootNavigationEnum {
     Auth = "Auth",
-    Shop = "Shop"
+    Shop = "Shop",
+    Startup = "Startup"
 }

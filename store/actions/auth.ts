@@ -1,7 +1,10 @@
 import { Dispatch } from "redux"
 import * as AuthInterface from "../../interface/Auth";
+import { AsyncStorage } from "react-native"
 
 const KEY = "AIzaSyC8ulgRB4LHpgrvdQ1_FhTWM-OSnepGjvA";
+
+let timer: any = undefined;
 
 export const signup = (email: string, password: string) => {
     return async (dispatch: Dispatch) => {
@@ -30,15 +33,10 @@ export const signup = (email: string, password: string) => {
                 throw new Error(message);
             }
             const resData: AuthInterface.IFirebaseSignUpResponse = await res.json();
-            // console.log(resData);
-            const action: AuthInterface.IRegisterUserAction = {
-                type: AuthInterface.AuthActionType.SIGN_UP,
-                payload: {
-                    token: resData.idToken,
-                    userId: resData.localId
-                }
-            }
-            dispatch(action);
+            // console.log(resData);            
+            dispatch(authenticateUser(resData.localId, resData.idToken, parseInt(resData.expiresIn) * 1000) as any);
+            const expirationDate = Date.now() + parseInt(resData.expiresIn) * 1000;
+            saveDataToStorage(resData.idToken, resData.localId, expirationDate);
         } catch (error) {
             // console.log(error.message)
             throw error;
@@ -72,18 +70,52 @@ export const login = (email: string, password: string) => {
                 throw new Error(message);
             }
             const resData: AuthInterface.IFirebaseSignInResponse = await res.json();
-            // console.log(resData);
-            const action: AuthInterface.ILoginUserAction = {
-                type: AuthInterface.AuthActionType.SIGN_IN,
-                payload: {
-                    token: resData.idToken,
-                    userId: resData.localId
-                }
-            }
-            dispatch(action);
+            // console.log(resData);            
+            dispatch(authenticateUser(resData.localId, resData.idToken, parseInt(resData.expiresIn) * 1000) as any);
+            const expirationDate = Date.now() + parseInt(resData.expiresIn) * 1000;
+            saveDataToStorage(resData.idToken, resData.localId, expirationDate);
         } catch (error) {
             // console.log(error.message)
             throw error;
         }
     }
+}
+
+export const authenticateUser = (userId: string, token: string, expiryTime: number) => {
+    return (dispatch: Dispatch) => {
+        dispatch(setLogoutTimer(expiryTime) as any)
+        dispatch({
+            type: AuthInterface.AuthActionType.AUTHENTICATE,
+            payload: {
+                token: token,
+                userId: userId
+            }
+        })
+    }
+}
+
+export const logoutUser = (): AuthInterface.ILogoutUserAction => {
+    clearLogoutTimer();
+    AsyncStorage.removeItem(AuthInterface.STORAGE_KEY.userData)
+    return { type: AuthInterface.AuthActionType.LOGOUT_USER }
+}
+
+const clearLogoutTimer = () => {
+    if (timer) {
+        clearTimeout(timer);
+    }
+}
+export const setLogoutTimer = (expirationTime: number) => {
+    return (dispatch: Dispatch) => {
+        timer = setTimeout(() => {
+            dispatch(logoutUser());
+        }, expirationTime)
+    }
+}
+const saveDataToStorage = (token: string, userId: string, expirationDate: number) => {
+    AsyncStorage.setItem(AuthInterface.STORAGE_KEY.userData, JSON.stringify({
+        token: token,
+        userId: userId,
+        expiryDate: expirationDate
+    }))
 }

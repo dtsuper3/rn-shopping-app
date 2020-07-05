@@ -33,7 +33,7 @@ export const ProductReducer = (state = initialState, action: ProductInterface.Pr
             return {
                 ...state,
                 availableProducts: action.payload.products,
-                userProducts: action.payload.products.filter(item => item.ownerId === "u1")
+                userProducts: action.payload.userProducts
             }
         case ProductInterface.ProductActionTypeConstant.DELETE_PRODUCT:
             return {
@@ -44,7 +44,7 @@ export const ProductReducer = (state = initialState, action: ProductInterface.Pr
         case ProductInterface.ProductActionTypeConstant.CREATE_PRODUCT:
             const newProduct = new Product(
                 action.payload.item.id,
-                "u1",
+                action.payload.item.ownerId,
                 action.payload.item.title,
                 action.payload.item.imageUrl,
                 action.payload.item.description,

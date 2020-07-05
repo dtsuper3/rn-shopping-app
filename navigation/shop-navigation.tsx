@@ -1,10 +1,12 @@
 import React from "react";
-import { Platform } from "react-native";
+import { Platform, View, Button } from "react-native";
 import {
     createStackNavigator,
     createAppContainer,
     createDrawerNavigator,
-    createSwitchNavigator
+    createSwitchNavigator,
+    SafeAreaView,
+    DrawerItems
 } from "react-navigation";
 import { ProductOverviewScreen } from "../screens/shop/product-overview";
 import { COLORS } from "../constants/colors";
@@ -16,6 +18,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { UserProductsScreen } from "../screens/user/user-products";
 import { EditProductScreen } from "../screens/user/edit-product";
 import { AuthScreen } from "../screens/user/auth-screen";
+import { StartupScreen } from "../screens/StartupScreen";
+import { useDispatch } from "react-redux";
+import * as AuthAction from "../store/actions/auth";
 
 
 const defaultNavigationOptions = {
@@ -47,7 +52,7 @@ const ProductsNavigator = createStackNavigator(
         navigationOptions: {
             drawerIcon: drawerConfig => (
                 <Ionicons
-                    name={Platform.OS === "android" ? "md-create" : "ios-create"}
+                    name={Platform.OS === "android" ? "md-cart" : "ios-cart"}
                     size={23}
                     color={drawerConfig.tintColor as string}
                 />
@@ -109,6 +114,18 @@ const ShopNavigator = createDrawerNavigator(
     {
         contentOptions: {
             activeTintColor: COLORS.primary
+        },
+        contentComponent: props => {
+            const dispatch = useDispatch()
+            return <View style={{ flex: 1, paddingTop: 20 }}>
+                <SafeAreaView forceInset={{ top: "always", horizontal: "never" }}>
+                    <DrawerItems {...props} />
+                    <Button title="Logout" color={COLORS.primary} onPress={() => {
+                        dispatch(AuthAction.logoutUser())
+                        // props.navigation.navigate(RootNavigationEnum.Auth)
+                    }} />
+                </SafeAreaView>
+            </View>
         }
     }
 )
@@ -122,6 +139,7 @@ const AuthNavigator = createStackNavigator({
 })
 
 const RootNavigator = createSwitchNavigator({
+    [RootNavigationEnum.Startup]: StartupScreen,
     [RootNavigationEnum.Auth]: AuthNavigator,
     [RootNavigationEnum.Shop]: ShopNavigator
 })

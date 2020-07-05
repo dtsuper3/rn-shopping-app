@@ -10,10 +10,11 @@ export interface IProduct {
 
 export interface IFirebaseSavedProductItem {
     [key: string]: {
-        title: string,
-        imageUrl: string,
-        description: string,
-        price: number
+        title: string;
+        imageUrl: string;
+        description: string;
+        price: number;
+        ownerId: string;
     }
 }
 
@@ -47,6 +48,7 @@ export interface IFetchProductAction {
     type: ProductActionTypeConstant.FETCH_PRODUCT,
     payload: {
         products: IProduct[];
+        userProducts: IProduct[];
     }
 }
 

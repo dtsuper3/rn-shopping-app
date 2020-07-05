@@ -3,7 +3,7 @@ import { AppLoading } from "expo";
 import * as Font from "expo-font";
 import { Provider } from "react-redux"
 import store from "./store";
-import ShopNavigator from "./navigation/shop-navigation"
+import { NavigationContainer } from './navigation/NavigationContainer';
 
 const fetchFonts = () => {
   return Font.loadAsync({
@@ -18,7 +18,7 @@ export default function App() {
   }
   return (
     <Provider store={store}>
-      <ShopNavigator />
+      <NavigationContainer />
     </Provider>
   );
 }

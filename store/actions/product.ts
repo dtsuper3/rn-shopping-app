@@ -7,6 +7,7 @@ export const fetchProducts = () => {
     return async (dispatch: Dispatch, getState: () => RootState) => {
         dispatch(isLoading(true))
         dispatch(errorProduct(""))
+        const userId = getState().auth.userId;
         try {
             const res = await fetch("https://items-dfe2d.firebaseio.com/products.json", {
                 method: "GET"
@@ -21,14 +22,15 @@ export const fetchProducts = () => {
                 const resData: ProductInterface.IFirebaseSavedProductItem = await res.json();
                 const loadedProducts = [];
                 for (const key in resData) {
-                    loadedProducts.push(new Product(key, "u1", resData[key].title, resData[key].imageUrl, resData[key].description, resData[key].price))
+                    loadedProducts.push(new Product(key, resData[key].ownerId, resData[key].title, resData[key].imageUrl, resData[key].description, resData[key].price))
                 }
                 // console.log(resData);
 
                 const action: ProductInterface.IFetchProductAction = {
                     type: ProductInterface.ProductActionTypeConstant.FETCH_PRODUCT,
                     payload: {
-                        products: loadedProducts
+                        products: loadedProducts,
+                        userProducts: loadedProducts.filter(prod => prod.imageUrl === userId)
                     }
                 }
                 dispatch(action)
@@ -80,7 +82,10 @@ export const createProduct = (item: ProductInterface.ICreateProductItem) => {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify(item)
+            body: JSON.stringify({
+                ...item,
+                ownerId: userId
+            })
         })
 
         const resData: { name: string } = await res.json();
